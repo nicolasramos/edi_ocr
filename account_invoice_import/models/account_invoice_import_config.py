@@ -12,66 +12,66 @@ class AccountInvoiceImportConfig(models.Model):
     _order = "sequence"
     _check_company_auto = True
 
-    name = fields.Char(required=True, string="Nombre")
+    name = fields.Char(required=True, string="Name")
     partner_id = fields.Many2one(
         "res.partner",
-        string="Proveedor",
+        string="Supplier",
         ondelete="cascade",
         domain=[("parent_id", "=", False)],
     )
-    active = fields.Boolean(default=True, string="Activo")
-    sequence = fields.Integer(string="Secuencia")
+    active = fields.Boolean(default=True, string="Active")
+    sequence = fields.Integer(string="Sequence")
     invoice_line_method = fields.Selection(
         [
-            ("1line_no_product", "Línea única, Sin Producto"),
-            ("1line_static_product", "Línea única, Producto Estático"),
-            ("nline_no_product", "Múltiples Líneas, Sin Producto"),
-            ("nline_static_product", "Múltiples Líneas, Producto Estático"),
-            ("nline_auto_product", "Múltiples Líneas, Producto Auto-seleccionado"),
+            ("1line_no_product", "Single Line, No Product"),
+            ("1line_static_product", "Single Line, Static Product"),
+            ("nline_no_product", "Multi-line, No Product"),
+            ("nline_static_product", "Multi-line, Static Product"),
+            ("nline_auto_product", "Multi-line, Auto-detect Product"),
         ],
-        string="Método para Línea de Factura",
+        string="Invoice Line Method",
         required=True,
         default="1line_no_product",
-        help="Los métodos de múltiples líneas no funcionarán para facturas PDF "
-        "que no tengan un archivo XML incrustado con información estructurada "
-        "en cada línea.",
+        help="Multi-line methods will not work for PDF invoices "
+        "that don't have an embedded XML file with structured "
+        "information for each line.",
     )
     company_id = fields.Many2one(
         "res.company",
-        string="Compañía",
+        string="Company",
         ondelete="cascade",
         required=True,
         default=lambda self: self.env.company,
     )
     account_id = fields.Many2one(
         "account.account",
-        string="Cuenta de Gasto",
+        string="Expense Account",
         domain="[('deprecated', '=', False), ('company_id', '=', company_id)]",
         check_company=True,
     )
     account_analytic_id = fields.Many2one(
-        "account.analytic.account", string="Cuenta Analítica", check_company=True
+        "account.analytic.account", string="Analytic Account", check_company=True
     )
     journal_id = fields.Many2one(
         "account.journal",
-        string="Forzar Diario de Compra",
+        string="Force Purchase Journal",
         check_company=True,
         domain="[('company_id', '=', company_id), ('type', '=', 'purchase')]",
-        help="Si está vacío, Odoo usará el primer diario de compra.",
+        help="If empty, Odoo will use the first purchase journal.",
     )
     label = fields.Char(
-        string="Forzar Descripción",
-        help="Forzar descripción de la línea de factura de proveedor",
+        string="Force Description",
+        help="Force description of the supplier invoice line",
     )
     tax_ids = fields.Many2many(
         "account.tax",
-        string="Impuestos",
+        string="Taxes",
         domain="[('type_tax_use', '=', 'purchase'), ('company_id', '=', company_id)]",
         check_company=True,
     )
     static_product_id = fields.Many2one(
         "product.product",
-        string="Producto Estático",
+        string="Static Product",
         check_company=True,
         domain="['|', ('company_id', '=', False), ('company_id', '=', company_id)]",
     )
@@ -85,20 +85,20 @@ class AccountInvoiceImportConfig(models.Model):
             ):
                 raise ValidationError(
                     _(
-                        "Se debe establecer el Producto Estático en la configuración "
-                        "de importación de facturas del proveedor '%s' que tiene un "
-                        "Método para Línea de Factura establecido en 'Línea única, "
-                        "Producto Estático' o 'Múltiples Líneas, Producto Estático'."
+                        "The Static Product must be set on the import "
+                        "configuration of supplier '%s' which has an "
+                        "Invoice Line Method set to 'Single Line, "
+                        "Static Product' or 'Multi-line, Static Product'."
                     )
                     % config.partner_id.name
                 )
             if "no_product" in config.invoice_line_method and not config.account_id:
                 raise ValidationError(
                     _(
-                        "Se debe establecer la Cuenta de Gasto en la configuración "
-                        "de importación de facturas del proveedor '%s' que tiene un "
-                        "Método para Línea de Factura establecido en 'Línea única, "
-                        "Sin Producto' o 'Múltiples Líneas, Sin Producto'."
+                        "The Expense Account must be set on the import "
+                        "configuration of supplier '%s' which has an "
+                        "Invoice Line Method set to 'Single Line, "
+                        "No Product' or 'Multi-line, No Product'."
                     )
                     % config.partner_id.name
                 )

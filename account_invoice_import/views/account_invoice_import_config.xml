@@ -8,11 +8,11 @@
     <record id="account_invoice_import_config_form" model="ir.ui.view">
         <field name="model">account.invoice.import.config</field>
         <field name="arch" type="xml">
-            <form string="Configuración de Importación de Facturas">
+            <form string="Invoice Import Configuration">
                 <sheet>
                     <widget
                         name="web_ribbon"
-                        title="Archivado"
+                        title="Archived"
                         bg_color="bg-danger"
                         attrs="{'invisible': [('active', '=', True)]}"
                     />
@@ -25,7 +25,7 @@
                         <field name="company_id" groups="base.group_multi_company" />
                         <field name="active" invisible="1" />
                     </group>
-                    <group string="Parámetros Contables" name="accounting">
+                    <group string="Accounting Parameters" name="accounting">
                         <field name="invoice_line_method" />
                         <field
                             name="account_id"
@@ -83,35 +83,35 @@
     <record id="account_invoice_import_config_search" model="ir.ui.view">
         <field name="model">account.invoice.import.config</field>
         <field name="arch" type="xml">
-            <search string="Buscar Configuraciones de Importación de Facturas">
+            <search string="Search Invoice Import Configurations">
                 <field name="name" />
                 <field name="partner_id" />
                 <separator />
                 <filter
-                    string="Archivado"
+                    string="Archived"
                     name="inactive"
                     domain="[('active','=',False)]"
                 />
-                <group string="Agrupar Por" name="groupby">
+                <group string="Group By" name="groupby">
                     <filter
                         name="partner_groupby"
-                        string="Contacto"
+                        string="Contact"
                         context="{'group_by': 'partner_id'}"
                     />
                     <filter
                         name="invoice_line_method_groupby"
-                        string="Método para Línea de Factura"
+                        string="Invoice Line Method"
                         context="{'group_by': 'invoice_line_method'}"
                     />
                     <filter
                         name="account_analytic_groupby"
-                        string="Cuenta Analítica"
+                        string="Analytic Account"
                         context="{'group_by': 'account_analytic_id'}"
                         groups="analytic.group_analytic_accounting"
                     />
                     <filter
                         name="journal_groupby"
-                        string="Forzar Diario de Compra"
+                        string="Force Purchase Journal"
                         context="{'group_by': 'journal_id'}"
                     />
                 </group>
@@ -119,14 +119,14 @@
         </field>
     </record>
     <record id="account_invoice_import_config_action" model="ir.actions.act_window">
-        <field name="name">Importar Facturas de Proveedor</field>
+        <field name="name">Import Supplier Invoices</field>
         <field name="res_model">account.invoice.import.config</field>
         <field name="view_mode">tree,form</field>
         <field name="context">{'invoice_import_config_main_view': True}</field>
     </record>
     <menuitem
         id="account_invoice_import_config_root"
-        name="Importar Facturas de Proveedor"
+        name="Import Supplier Invoices"
         parent="account.menu_finance_configuration"
         sequence="90"
     />

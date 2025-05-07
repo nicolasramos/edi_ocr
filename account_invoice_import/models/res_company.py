@@ -29,6 +29,6 @@ class ResCompany(models.Model):
         (
             "invoice_import_email_uniq",
             "unique(invoice_import_email)",
-            "¡Este correo electrónico de importación de facturas ya existe!",
+            "This invoice import e-mail already exists!",
         )
     ]

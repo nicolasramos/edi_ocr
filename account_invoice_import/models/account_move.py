@@ -13,7 +13,7 @@ class AccountMove(models.Model):
         """Add amount_untaxed in name_get of invoices"""
         name = super()._get_move_display_name(show_ref=show_ref)
         if self.env.context.get("invoice_show_amount"):
-            name += _(" Amount w/o tax: %s") % format_amount(
+            name += _(" Amount without tax: %s") % format_amount(
                 self.env, self.amount_untaxed, self.currency_id
             )
         return name

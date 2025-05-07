@@ -12,7 +12,7 @@
             <xpath expr="//div[@id='invoicing_settings']" position="after">
                 <h2
                     attrs="{'invisible': [('has_accounting_entries','=',False)]}"
-                >Importación de Facturas Electrónicas</h2>
+                >Electronic Invoice Import</h2>
         <div class="row mt16 o_settings_container" id="account_invoice_import">
             <div class="col-xs-12 col-md-12 o_setting_box">
             <div class="o_setting_left_pane" />

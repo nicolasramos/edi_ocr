@@ -19,16 +19,16 @@ except ImportError:
 
 class AccountInvoiceImportSimplePdfInvoiceNumber(models.Model):
     _name = "account.invoice.import.simple.pdf.invoice.number"
-    _description = "Formato de número de factura para importación simple de PDF"
+    _description = "Invoice number format for simple PDF import"
     _order = "sequence, id"
 
-    partner_id = fields.Many2one("res.partner", string="Proveedor", ondelete="cascade")
-    sequence = fields.Integer(default=10, string="Secuencia")
-    string_type = fields.Selection("_string_type_sel", string="Tipo", required=True)
-    fixed_char = fields.Char(string="Caracter Fijo")
-    occurrence_min = fields.Integer(string="Ocurrencia Mínima", default=1)
+    partner_id = fields.Many2one("res.partner", string="Supplier", ondelete="cascade")
+    sequence = fields.Integer(default=10, string="Sequence")
+    string_type = fields.Selection("_string_type_sel", string="Type", required=True)
+    fixed_char = fields.Char(string="Fixed Character")
+    occurrence_min = fields.Integer(string="Minimum Occurrence", default=1)
     occurrence_max = fields.Integer(
-        string="Ocurrencia Máxima",
+        string="Maximum Occurrence",
         default=1,
         compute="_compute_occurrence_max",
         store=True,
@@ -40,26 +40,26 @@ class AccountInvoiceImportSimplePdfInvoiceNumber(models.Model):
         (
             "occurrence_min_positive",
             "CHECK(occurrence_min > 0)",
-            "La ocurrencia mínima debe ser estrictamente positiva.",
+            "Minimum occurrence must be strictly positive.",
         ),
         (
             "occurrence_max_positive",
             "CHECK(occurrence_max > 0)",
-            "La ocurrencia máxima debe ser estrictamente positiva.",
+            "Maximum occurrence must be strictly positive.",
         ),
     ]
 
     @api.model
     def _string_type_sel(self):
         return [
-            ("fixed", "Fijo"),
-            ("letter_upper", "Letra Mayúscula"),
-            ("letter_lower", "Letra Minúscula"),
-            ("digit", "Dígito(s)"),
-            ("space", "Espacio"),
-            ("year2", "Año en 2 dígitos"),
-            ("year4", "Año en 4 dígitos"),
-            ("month", "Mes (2 dígitos)"),
+            ("fixed", "Fixed"),
+            ("letter_upper", "Uppercase Letter"),
+            ("letter_lower", "Lowercase Letter"),
+            ("digit", "Digit(s)"),
+            ("space", "Space"),
+            ("year2", "Year in 2 digits"),
+            ("year4", "Year in 4 digits"),
+            ("month", "Month (2 digits)"),
         ]
 
     @api.constrains("string_type", "fixed_char", "occurrence_min", "occurrence_max")
@@ -68,13 +68,13 @@ class AccountInvoiceImportSimplePdfInvoiceNumber(models.Model):
             if rec.string_type == "fixed":
                 fixed_char_stripped = rec.fixed_char and rec.fixed_char.strip()
                 if not fixed_char_stripped:
-                    raise ValidationError(_("Falta el caracter fijo."))
+                    raise ValidationError(_("Missing fixed character."))
             elif rec.string_type in ("letter_upper", "letter_lower", "digit", "space"):
                 if rec.occurrence_max < rec.occurrence_min:
                     raise ValidationError(
                         _(
-                            "La ocurrencia máxima (%(occurrence_max)s) debe ser igual "
-                            "o superior a la ocurrencia mínima (%(occurrence_min)s).",
+                            "Maximum occurrence (%(occurrence_max)s) must be equal "
+                            "or greater than minimum occurrence (%(occurrence_min)s).",
                             occurrence_max=rec.occurrence_max,
                             occurrence_min=rec.occurrence_min,
                         )

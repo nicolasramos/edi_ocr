@@ -24,6 +24,7 @@ Este módulo extiende la funcionalidad del módulo `account_invoice_import_simpl
 - pdf2image
 - regex
 - dateparser
+- pypdf2
 ## Instalación
 
 ### 1. Instalación del módulo

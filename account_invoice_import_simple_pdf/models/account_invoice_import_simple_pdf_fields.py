@@ -24,65 +24,65 @@ except ImportError:
 
 class AccountInvoiceImportSimplePdfFields(models.Model):
     _name = "account.invoice.import.simple.pdf.fields"
-    _description = "Campos para importación simple de facturas PDF"
+    _description = "Fields for simple PDF invoice import"
     _order = "partner_id, sequence, id"
 
-    partner_id = fields.Many2one("res.partner", string="Proveedor", ondelete="cascade")
+    partner_id = fields.Many2one("res.partner", string="Supplier", ondelete="cascade")
     # the order has no impact, it's just for readability
-    sequence = fields.Integer(default=10, string="Secuencia")
+    sequence = fields.Integer(default=10, string="Sequence")
     name = fields.Selection(
         [
             ("amount_total", "Total"),
-            ("amount_untaxed", "Importe sin impuestos"),
-            ("amount_tax", "Importe de Impuesto"),
-            ("date", "Fecha de Factura"),
-            ("date_due", "Fecha de Vencimiento"),
-            ("date_start", "Fecha de Inicio"),
-            ("date_end", "Fecha de Fin"),
-            ("invoice_number", "Número de Factura"),
-            ("description", "Descripción"),
+            ("amount_untaxed", "Untaxed Amount"),
+            ("amount_tax", "Tax Amount"),
+            ("date", "Invoice Date"),
+            ("date_due", "Due Date"),
+            ("date_start", "Start Date"),
+            ("date_end", "End Date"),
+            ("invoice_number", "Invoice Number"),
+            ("description", "Description"),
         ],
         required=True,
-        string="Campo",
+        string="Field",
     )
-    regexp = fields.Char(string="Expresión Regular Específica")
+    regexp = fields.Char(string="Specific Regular Expression")
     date_format = fields.Selection(
         "_date_format_sel",
-        string="Formato de Fecha Específico",
-        help="Dejar vacío si el formato usado es el mismo que el definido "
-        "en la sección global.",
+        string="Specific Date Format",
+        help="Leave empty if the format used is the same as the one defined "
+        "in the global section.",
     )
     date_separator = fields.Selection(
         "_date_separator_sel",
-        string="Separador de Fecha Específico",
+        string="Specific Date Separator",
         compute="_compute_date_separator",
         readonly=False,
         store=True,
         precompute=True,
-        help="Dejar vacío si el formato usado es el mismo que el definido "
-        "en la sección global.",
+        help="Leave empty if the format used is the same as the one defined "
+        "in the global section.",
     )
-    start = fields.Char(string="Cadena de Inicio")
-    end = fields.Char(string="Cadena de Fin")
+    start = fields.Char(string="Start String")
+    end = fields.Char(string="End String")
     extract_rule = fields.Selection(
         [
-            ("first", "Primero"),
-            ("last", "Último"),
-            ("position_start", "Posición Específica desde el Inicio"),
-            ("position_end", "Posición Específica desde el Fin"),
-            ("min", "Mínimo"),
-            ("max", "Máximo"),
-            ("position_min", "Posición Específica desde Mínimo"),
-            ("position_max", "Posición Específica desde Máximo"),
+            ("first", "First"),
+            ("last", "Last"),
+            ("position_start", "Specific Position from Start"),
+            ("position_end", "Specific Position from End"),
+            ("min", "Minimum"),
+            ("max", "Maximum"),
+            ("position_min", "Specific Position from Minimum"),
+            ("position_max", "Specific Position from Maximum"),
         ],
         required=True,
         compute="_compute_extract_rule",
         readonly=False,
         store=True,
         precompute=True,
-        string="Regla de Extracción",
+        string="Extraction Rule",
     )
-    position = fields.Integer(default=2, string="Posición")
+    position = fields.Integer(default=2, string="Position")
 
     @api.model
     def _date_format_sel(self):
@@ -96,12 +96,12 @@ class AccountInvoiceImportSimplePdfFields(models.Model):
         (
             "position_specific_positive",
             "CHECK(position > 0)",
-            "La posición debe ser estrictamente positiva.",
+            "Position must be strictly positive.",
         ),
         (
             "partner_field_unique",
             "unique(partner_id, name)",
-            "Ya existe una entrada para ese campo.",
+            "An entry for that field already exists.",
         ),
     ]
 
@@ -111,8 +111,8 @@ class AccountInvoiceImportSimplePdfFields(models.Model):
             if field.name == "description" and not field.regexp:
                 raise ValidationError(
                     _(
-                        "Debes establecer una Expresión Regular Específica en "
-                        "el campo 'Descripción'."
+                        "You must set a Specific Regular Expression on "
+                        "the field 'Description'."
                     )
                 )
 
@@ -137,7 +137,7 @@ class AccountInvoiceImportSimplePdfFields(models.Model):
         if not data_list:
             if raise_if_none:
                 raise UserError(
-                    _("No se extrajeron datos válidos para el campo '%s'.") % self.name
+                    _("No valid data extracted for field '%s'.") % self.name
                 )
             else:
                 return None
@@ -157,10 +157,10 @@ class AccountInvoiceImportSimplePdfFields(models.Model):
         elif self.extract_rule in ("position_min", "position_max"):
             if len(data_list) < self.position:
                 error_msg = _(
-                    "El proveedor '%(partner_name)s' está configurado con una regla de extracción "
-                    "'%(extract_rule)s' con posición %(position)s para el campo "
-                    "'%(field_name)s' pero la lista de datos válidos extraídos solo "
-                    "tiene %(entries_count)s entradas.",
+                    "Supplier '%(partner_name)s' is configured with an extraction rule "
+                    "'%(extract_rule)s' with position %(position)s for field "
+                    "'%(field_name)s' but the list of extracted valid data only "
+                    "has %(entries_count)s entries.",
                     partner_name=self.partner_id.display_name,
                     extract_rule=test_info["extract_rule_sel"][self.extract_rule],
                     position=self.position,
@@ -184,10 +184,10 @@ class AccountInvoiceImportSimplePdfFields(models.Model):
         elif self.extract_rule in ("position_start", "position_end"):
             if len(data_list) < self.position:
                 error_msg = _(
-                    "El proveedor '%(partner_name)s' está configurado con una regla de extracción "
-                    "'%(extract_rule)s' con posición %(position)s para el campo "
-                    "'%(field_name)s' pero la lista de datos válidos extraídos "
-                    "solo tiene %(entries_count)s entradas.",
+                    "Supplier '%(partner_name)s' is configured with an extraction rule "
+                    "'%(extract_rule)s' with position %(position)s for field "
+                    "'%(field_name)s' but the list of extracted valid data "
+                    "only has %(entries_count)s entries.",
                     partner_name=self.partner_id.display_name,
                     extract_rule=test_info["extract_rule_sel"][self.extract_rule],
                     position=self.position,
@@ -205,7 +205,7 @@ class AccountInvoiceImportSimplePdfFields(models.Model):
                 position -= 1
             return data_list[position * sign]
         else:
-            raise UserError(_("Configuración incorrecta"))
+            raise UserError(_("Wrong Configuration"))
 
     def restrict_text(self, raw_text, test_info):
         self.ensure_one()
@@ -216,24 +216,24 @@ class AccountInvoiceImportSimplePdfFields(models.Model):
             position = restrict_text.find(start)
             if position >= 0:
                 restrict_text = restrict_text[position + len(start) :]
-                test_info[self.name]["start"] = _("Corte exitoso en '%s'") % start
+                test_info[self.name]["start"] = _("Successful cut at '%s'") % start
             else:
-                error_msg = _("Cadena '%s' no encontrada") % start
+                error_msg = _("String '%s' not found") % start
                 test_info[self.name]["start"] = "<b%s>%s</b>" % (ERROR_STYLE, error_msg)
         if end:
             if not restrict_text or (restrict_text and not restrict_text.strip()):
                 error_msg = _(
-                    "No hay texto para cortar, tal vez porque la cadena de inicio "
-                    "estaba al final del documento"
+                    "No text to cut, maybe because the start string "
+                    "was at the end of the document"
                 )
                 test_info[self.name]["end"] = "<b%s>%s</b>" % (ERROR_STYLE, error_msg)
             else:
                 position = restrict_text.find(end)
                 if position >= 0:
                     restrict_text = restrict_text[:position]
-                    test_info[self.name]["end"] = _("Corte exitoso en '%s'") % end
+                    test_info[self.name]["end"] = _("Successful cut at '%s'") % end
                 else:
-                    error_msg = _("Cadena '%s' no encontrada") % end
+                    error_msg = _("String '%s' not found") % end
                     test_info[self.name]["end"] = "<b%s>%s</b>" % (
                         ERROR_STYLE,
                         error_msg,
@@ -247,8 +247,8 @@ class AccountInvoiceImportSimplePdfFields(models.Model):
         if not date_format:
             raise UserError(
                 _(
-                    "No hay formato de fecha configurado en el proveedor '%(partner_name)s' "
-                    "ni en el campo '%(field_name)s'.",
+                    "No date format configured on supplier '%(partner_name)s' "
+                    "nor on field '%(field_name)s'.",
                     partner_name=partner_name,
                     field_name=field_name,
                 )
@@ -257,8 +257,8 @@ class AccountInvoiceImportSimplePdfFields(models.Model):
         if not date_separator:
             raise UserError(
                 _(
-                    "No hay separador de fecha configurado en el proveedor '%(partner_name)s' "
-                    "ni en el campo '%(field_name)s'.",
+                    "No date separator configured on supplier '%(partner_name)s' "
+                    "nor on field '%(field_name)s'.",
                     partner_name=partner_name,
                     field_name=field_name,
                 )
@@ -305,7 +305,7 @@ class AccountInvoiceImportSimplePdfFields(models.Model):
                 valid_dates_dt.append(date_dt)
             else:
                 logger.debug(
-                    "Fallo al analizar la fecha %s usando el formato %s y el idioma %s",
+                    "Failed to parse date %s using format %s and lang %s",
                     date_raw,
                     date_formatdt,
                     partner_config["lang_short"],
@@ -394,7 +394,7 @@ class AccountInvoiceImportSimplePdfFields(models.Model):
             try:
                 valid_amounts.append(float(amount_raw))
             except ValueError:
-                logger.debug("%s es un flotante inválido", amount_raw)
+                logger.debug("%s is an invalid float", amount_raw)
         test_info[self.name].update(
             {
                 "res_regex": res_regex,

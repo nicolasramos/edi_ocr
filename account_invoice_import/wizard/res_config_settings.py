@@ -11,20 +11,20 @@ class AccountConfigSettings(models.TransientModel):
     adjustment_credit_account_id = fields.Many2one(
         related="company_id.adjustment_credit_account_id", 
         readonly=False,
-        string="Cuenta de Ajuste de Crédito"
+        string="Adjustment Credit Account"
     )
     adjustment_debit_account_id = fields.Many2one(
         related="company_id.adjustment_debit_account_id", 
         readonly=False,
-        string="Cuenta de Ajuste de Débito"
+        string="Adjustment Debit Account"
     )
     invoice_import_email = fields.Char(
         related="company_id.invoice_import_email", 
         readonly=False,
-        string="Email para Importación de Facturas"
+        string="Email for Invoice Import"
     )
     invoice_import_create_bank_account = fields.Boolean(
         related="company_id.invoice_import_create_bank_account", 
         readonly=False,
-        string="Crear Cuenta Bancaria en Importación"
+        string="Create Bank Account on Import"
     )

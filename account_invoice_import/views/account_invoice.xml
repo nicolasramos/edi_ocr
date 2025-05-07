@@ -13,7 +13,7 @@
                 <button
                     type="action"
                     name="%(account_invoice_import_action)d"
-                    string="Importar Archivo de Factura"
+                    string="Import Invoice File"
                     context="{'wizard_default_state': 'update-from-invoice', 'default_invoice_id': id, 'default_partner_id': commercial_partner_id}"
                     attrs="{'invisible': ['|', ('move_type', 'not in', ('in_invoice', 'in_refund')), ('state', '!=', 'draft')]}"
                 />
@@ -22,7 +22,7 @@
                 <button
                     type="action"
                     name="%(account_invoice_import_action)d"
-                    string="Importar Siguiente Factura"
+                    string="Import Next Invoice"
                     context="{}"
                     attrs="{'invisible': [('move_type', 'not in', ('in_invoice', 'in_refund'))]}"
                 />

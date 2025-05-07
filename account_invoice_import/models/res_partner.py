@@ -11,11 +11,11 @@ class ResPartner(models.Model):
     invoice_import_ids = fields.One2many(
         "account.invoice.import.config",
         "partner_id",
-        string="Configuración de Importación de Facturas",
+        string="Invoice Import Configurations",
     )
     invoice_import_count = fields.Integer(
         compute="_compute_invoice_import_count",
-        string="Número de Configuraciones de Importación de Facturas",
+        string="Number of Invoice Import Configurations",
         readonly=True,
     )
 

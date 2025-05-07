@@ -13,7 +13,7 @@
     <field name="arch" type="xml">
         <ul name="supported_formats_list" position="inside">
                 <li><b
-                    >archivo PDF regular</b> sin ningún archivo XML incrustado mediante una preconfiguración en Odoo.</li>
+                    >regular PDF file</b> without any embedded XML file via a pre-configuration in Odoo.</li>
         </ul>
     </field>
 </record>
