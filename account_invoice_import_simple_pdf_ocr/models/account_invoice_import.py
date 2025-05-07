@@ -7,8 +7,8 @@ from odoo import _, api, models
 from odoo.exceptions import UserError
 
 # Set Tesseract data directory - can be configured differently depending on OS
-TESSDATA_PREFIX = "/usr/share/tesseract-ocr/4.00/tessdata"
-os.environ["TESSDATA_PREFIX"] = TESSDATA_PREFIX
+# TESSDATA_PREFIX = "/usr/share/tesseract-ocr/4.00/tessdata" # This line is removed
+# os.environ["TESSDATA_PREFIX"] = TESSDATA_PREFIX # This line is removed
 
 logger = logging.getLogger(__name__)
 
@@ -66,6 +66,14 @@ class AccountInvoiceImport(models.TransientModel):
     def _simple_pdf_text_extraction_tesseract(self, fileobj, test_info):
         """Extract text from PDF using Tesseract OCR"""
         res = False
+        # Get TESSDATA_PREFIX from system parameters
+        IrConfigParameter = self.env["ir.config_parameter"].sudo()
+        tessdata_prefix = IrConfigParameter.get_param(
+            "account_invoice_import_simple_pdf_ocr.tessdata_prefix",
+            "/usr/share/tesseract-ocr/4.00/tessdata"  # Default value
+        )
+        original_tessdata_prefix = os.environ.get("TESSDATA_PREFIX")
+        os.environ["TESSDATA_PREFIX"] = tessdata_prefix
         try:
             # Convert PDF to images
             images = convert_from_path(fileobj.name)
@@ -88,7 +96,7 @@ class AccountInvoiceImport(models.TransientModel):
                     "all": "\n".join(output),
                     "first": output[0] if output else "",
                 }
-                logger.info("Text extraction performed with Tesseract OCR")
+                logger.info("Text extraction performed with Tesseract OCR using TESSDATA_PREFIX: %s", tessdata_prefix)
                 test_info["text_extraction"] = "Tesseract"
 
                 # Process text for space removal
@@ -99,8 +107,13 @@ class AccountInvoiceImport(models.TransientModel):
                     "%s+" % test_info["space_pattern"], "", res["first"]
                 )
         except Exception as e:
-            logger.warning("Text extraction with Tesseract failed. Error: %s", e)
-
+            logger.warning("Text extraction with Tesseract failed. Error: %s. Using TESSDATA_PREFIX: %s", e, tessdata_prefix)
+        finally:
+            # Restore original TESSDATA_PREFIX if it was set, otherwise unset it
+            if original_tessdata_prefix is not None:
+                os.environ["TESSDATA_PREFIX"] = original_tessdata_prefix
+            elif "TESSDATA_PREFIX" in os.environ:
+                del os.environ["TESSDATA_PREFIX"]
         return res
 
     @api.model

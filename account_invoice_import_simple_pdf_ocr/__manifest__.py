@@ -25,7 +25,9 @@
         ],
         "deb": ["tesseract-ocr-spa", "poppler-utils"],
     },
-    "data": [],
+    "data": [
+        "data/ir_config_parameter_data.xml",
+    ],
     "assets": {
         "web.assets_backend": [
             # Add any JS/CSS assets if needed
