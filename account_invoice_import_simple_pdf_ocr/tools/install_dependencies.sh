@@ -77,7 +77,7 @@ if ! command -v tesseract &> /dev/null; then
 fi
 
 # Check tessdata directory
-TESSDATA_DIR="/usr/share/tesseract-ocr/4.00/tessdata"
+TESSDATA_DIR="/usr/share/tesseract-ocr/5/tessdata"
 if [ ! -d "$TESSDATA_DIR" ]; then
     print_warning "Tesseract data directory not found at expected location: $TESSDATA_DIR"
 

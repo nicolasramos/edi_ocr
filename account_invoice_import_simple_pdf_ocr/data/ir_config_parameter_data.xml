@@ -2,7 +2,7 @@
     <data noupdate="1"> <!-- noupdate="1" para no sobrescribir en actualizaciones si el usuario lo cambió -->
         <record id="param_tessdata_prefix" model="ir.config_parameter">
             <field name="key">account_invoice_import_simple_pdf_ocr.tessdata_prefix</field>
-            <field name="value">/usr/share/tesseract-ocr/4.00/tessdata</field> <!-- Valor por defecto -->
+            <field name="value">/usr/share/tesseract-ocr/5/tessdata</field> <!-- Valor por defecto -->
         </record>
     </data>
 </odoo>

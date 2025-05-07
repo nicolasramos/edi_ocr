@@ -7,7 +7,7 @@ from odoo import _, api, models
 from odoo.exceptions import UserError
 
 # Set Tesseract data directory - can be configured differently depending on OS
-# TESSDATA_PREFIX = "/usr/share/tesseract-ocr/4.00/tessdata" # This line is removed
+# TESSDATA_PREFIX = "/usr/share/tesseract-ocr/5/tessdata" # This line is removed
 # os.environ["TESSDATA_PREFIX"] = TESSDATA_PREFIX # This line is removed
 
 logger = logging.getLogger(__name__)
@@ -70,7 +70,7 @@ class AccountInvoiceImport(models.TransientModel):
         IrConfigParameter = self.env["ir.config_parameter"].sudo()
         tessdata_prefix = IrConfigParameter.get_param(
             "account_invoice_import_simple_pdf_ocr.tessdata_prefix",
-            "/usr/share/tesseract-ocr/4.00/tessdata"  # Default value
+            "/usr/share/tesseract-ocr/5/tessdata"  # Default value
         )
         original_tessdata_prefix = os.environ.get("TESSDATA_PREFIX")
         os.environ["TESSDATA_PREFIX"] = tessdata_prefix

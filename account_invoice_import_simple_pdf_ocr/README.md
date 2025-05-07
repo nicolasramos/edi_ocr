@@ -56,10 +56,10 @@ pip3 install pdf2image pytesseract regex
 
 ### 3. Configuración de Tesseract
 
-El módulo utiliza por defecto la ruta `/usr/share/tesseract-ocr/4.00/tessdata` como directorio de datos para Tesseract. Si tu instalación utiliza una ruta diferente, deberás modificar la variable `TESSDATA_PREFIX` en el archivo `models/account_invoice_import.py`.
+El módulo utiliza por defecto la ruta `/usr/share/tesseract-ocr/5/tessdata` como directorio de datos para Tesseract. Si tu instalación utiliza una ruta diferente, deberás modificar la variable `TESSDATA_PREFIX` en el archivo `models/account_invoice_import.py`.
 
 Dependiendo de la versión de Tesseract y la distribución, las rutas pueden variar:
-- Tesseract 4.x: `/usr/share/tesseract-ocr/4.00/tessdata`
+- Tesseract 4.x: `/usr/share/tesseract-ocr/5/tessdata`
 - Tesseract 5.x: `/usr/share/tesseract-ocr/5/tessdata`
 
 #### Configuración en entornos Docker
