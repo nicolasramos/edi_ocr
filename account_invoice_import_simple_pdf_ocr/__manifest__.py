@@ -13,7 +13,7 @@
     "website": "https://nicolasramos.es",
     "license": "OPL-1",  # "AGPL-3" "LGPL-3" "OPL-1" "Other OSI approved licence" "Other proprietary"
     "category": "Accounting",
-    "version": "16.0.1.0.0",
+    "version": "17.0.1.0.0",
     "depends": [
         "account_invoice_import_simple_pdf",
     ],

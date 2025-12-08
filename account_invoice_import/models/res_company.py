@@ -10,11 +10,11 @@ class ResCompany(models.Model):
 
     adjustment_credit_account_id = fields.Many2one(
         "account.account",
-        domain="[('deprecated', '=', False), ('company_id', '=', company_id)]",
+        check_company=True,
     )
     adjustment_debit_account_id = fields.Many2one(
         "account.account",
-        domain="[('deprecated', '=', False), ('company_id', '=', company_id)]",
+        check_company=True,
     )
     invoice_import_email = fields.Char(
         "Mail Gateway: Destination E-mail",
@@ -29,6 +29,19 @@ class ResCompany(models.Model):
         (
             "invoice_import_email_uniq",
             "unique(invoice_import_email)",
-            "This invoice import e-mail already exists!",
+            "This invoice import email already exists!",
         )
     ]
+
+    def _cannot_refund_vat(self):
+        self.ensure_one()
+        purchase_tax_count = self.env["account.tax"].search_count(
+            [
+                ("company_id", "=", self.id),
+                ("unece_type_code", "=", "VAT"),
+                ("type_tax_use", "=", "purchase"),
+            ]
+        )
+        if not purchase_tax_count:
+            return True
+        return False

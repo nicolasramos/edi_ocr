@@ -19,16 +19,16 @@ except ImportError:
 
 class AccountInvoiceImportSimplePdfInvoiceNumber(models.Model):
     _name = "account.invoice.import.simple.pdf.invoice.number"
-    _description = "Invoice number format for simple PDF import"
+    _description = "Invoice number format for Simple PDF invoice import"
     _order = "sequence, id"
 
-    partner_id = fields.Many2one("res.partner", string="Supplier", ondelete="cascade")
-    sequence = fields.Integer(default=10, string="Sequence")
+    partner_id = fields.Many2one("res.partner", string="Vendor", ondelete="cascade")
+    sequence = fields.Integer(default=10)
     string_type = fields.Selection("_string_type_sel", string="Type", required=True)
-    fixed_char = fields.Char(string="Fixed Character")
-    occurrence_min = fields.Integer(string="Minimum Occurrence", default=1)
+    fixed_char = fields.Char()
+    occurrence_min = fields.Integer(string="Minimum Occurence", default=1)
     occurrence_max = fields.Integer(
-        string="Maximum Occurrence",
+        string="Maximum Occurence",
         default=1,
         compute="_compute_occurrence_max",
         store=True,
@@ -40,12 +40,12 @@ class AccountInvoiceImportSimplePdfInvoiceNumber(models.Model):
         (
             "occurrence_min_positive",
             "CHECK(occurrence_min > 0)",
-            "Minimum occurrence must be strictly positive.",
+            "The minimum occurence must be strictly positive.",
         ),
         (
             "occurrence_max_positive",
             "CHECK(occurrence_max > 0)",
-            "Maximum occurrence must be strictly positive.",
+            "The maximum occurence must be strictly positive.",
         ),
     ]
 
@@ -53,12 +53,12 @@ class AccountInvoiceImportSimplePdfInvoiceNumber(models.Model):
     def _string_type_sel(self):
         return [
             ("fixed", "Fixed"),
-            ("letter_upper", "Uppercase Letter"),
-            ("letter_lower", "Lowercase Letter"),
+            ("letter_upper", "Upper Letter"),
+            ("letter_lower", "Lower Letter"),
             ("digit", "Digit(s)"),
             ("space", "Space"),
-            ("year2", "Year in 2 digits"),
-            ("year4", "Year in 4 digits"),
+            ("year2", "Year on 2 digits"),
+            ("year4", "Year on 4 digits"),
             ("month", "Month (2 digits)"),
         ]
 
@@ -68,13 +68,13 @@ class AccountInvoiceImportSimplePdfInvoiceNumber(models.Model):
             if rec.string_type == "fixed":
                 fixed_char_stripped = rec.fixed_char and rec.fixed_char.strip()
                 if not fixed_char_stripped:
-                    raise ValidationError(_("Missing fixed character."))
+                    raise ValidationError(_("Missing fixed char."))
             elif rec.string_type in ("letter_upper", "letter_lower", "digit", "space"):
                 if rec.occurrence_max < rec.occurrence_min:
                     raise ValidationError(
                         _(
-                            "Maximum occurrence (%(occurrence_max)s) must be equal "
-                            "or greater than minimum occurrence (%(occurrence_min)s).",
+                            "The maximum occurence (%(occurrence_max)s) must be equal "
+                            "to or above the minimum occurence (%(occurrence_min)s).",
                             occurrence_max=rec.occurrence_max,
                             occurrence_min=rec.occurrence_min,
                         )
@@ -112,6 +112,6 @@ class AccountInvoiceImportSimplePdfInvoiceNumber(models.Model):
                 years_str = [str(y)[-2:] for y in years]
             else:
                 years_str = [str(y) for y in years]
-            regex_list.append("(?:%s)" % "|".join(years_str))
+            regex_list.append(f"(?:{'|'.join(years_str)})")
         elif self.string_type == "month":
             regex_list.append("(?:01|02|03|04|05|06|07|08|09|10|11|12)")

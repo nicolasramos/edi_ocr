@@ -3,11 +3,11 @@
 
 import base64
 import os
-from odoo.tests.common import SavepointCase, tagged
+from odoo.tests.common import TransactionCase, tagged
 from odoo.modules.module import get_module_resource
 
 @tagged('post_install', '-at_install')
-class TestInvoiceImportOcr(SavepointCase):
+class TestInvoiceImportOcr(TransactionCase):
 
     @classmethod
     def setUpClass(cls):

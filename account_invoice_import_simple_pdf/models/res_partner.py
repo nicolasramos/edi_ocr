@@ -28,30 +28,29 @@ class ResPartner(models.Model):
     @api.model
     def _simple_pdf_date_format_sel(self):
         return [
-            ("dd-mm-y4", _("DD MM AAAA")),
-            ("dd-month-y4", _("DD Mes AAAA")),
-            ("month-dd-y4", _("Mes DD AAAA")),
-            ("mm-dd-y4", _("MM DD AAAA")),
-            ("y4-mm-dd", _("AAAA MM DD")),
-            ("dd-mm-y2", _("DD MM AA")),
-            ("dd-month-y2", _("DD Mes AA")),
-            ("month-dd-y2", _("Mes DD AA")),
-            ("mm-dd-y2", _("MM DD AA")),
+            ("dd-mm-y4", _("DD MM YYYY")),
+            ("dd-month-y4", _("DD Month YYYY")),
+            ("month-dd-y4", _("Month DD YYYY")),
+            ("mm-dd-y4", _("MM DD YYYY")),
+            ("y4-mm-dd", _("YYYY MM DD")),
+            ("dd-mm-y2", _("DD MM YY")),
+            ("dd-month-y2", _("DD Month YY")),
+            ("month-dd-y2", _("Month DD YY")),
+            ("mm-dd-y2", _("MM DD YY")),
         ]
 
     @api.model
     def _simple_pdf_date_separator_sel(self):
         return [
             ("slash", "/"),
-            ("dash", _("guión")),
-            ("dot", _("punto")),
-            ("space", _("espacio")),
+            ("dash", _("dash")),
+            ("dot", _("dot")),
+            ("space", _("space")),
         ]
 
     simple_pdf_keyword = fields.Char(
-        string="Palabra Clave PDF Simple",
-        help="Si está vacío, Odoo usará el número de IVA para identificar al proveedor. "
-        "Para coincidir con varias palabras clave, sepárelas con '|' (pipe)."
+        help="If empty, Odoo will use the VAT number to identify the partner. "
+        "To match on several keywords, separate them with '|' (pipe)."
     )
     # Temporary hack: I disable the default values for the fields
     # simple_pdf_date_format and simple_pdf_date_separator
@@ -59,82 +58,82 @@ class ResPartner(models.Model):
     # https://github.com/odoo/odoo/issues/75492
     simple_pdf_date_format = fields.Selection(
         "_simple_pdf_date_format_sel",
-        string="Formato de Fecha",
+        string="Date Format",
         # default="dd-mm-y4",
-        help="Si el formato de fecha usa 'Mes', verifica que el idioma esté "
-        "configurado correctamente en el proveedor. 'Mes' funciona tanto en versión completa como "
-        "corta ('Enero' y 'Ene.').",
+        help="If the date format uses 'Month', check that the language is "
+        "properly configured on the partner. 'Month' works both in full and "
+        "short version ('January' and 'Jan.').",
     )
     simple_pdf_date_separator = fields.Selection(
         "_simple_pdf_date_separator_sel",
         # default="slash",
-        string="Separador de Fecha",
+        string="Date Separator",
         compute="_compute_simple_pdf_date_separator",
         readonly=False,
         precompute=True,
         store=True,
-        help="Si la fecha se ve como 'Sep. 4, 2021', usa 'espacio' como separador "
-        "de fecha (Odoo ignorará el punto y la coma).",
+        help="If the date looks like 'Sep. 4, 2021', use 'space' as date "
+        "separator (Odoo will ignore the dot and comma).",
     )
     simple_pdf_decimal_separator = fields.Selection(
         [
-            ("dot", "punto"),
-            ("comma", "coma"),
+            ("dot", "dot"),
+            ("comma", "comma"),
         ],
-        string="Separador Decimal",
+        string="Decimal Separator",
         compute="_compute_simple_pdf_decimal_separator",
         readonly=False,
         precompute=True,
         store=True,
-        help="Si está vacío, Odoo usará el separador decimal configurado en "
-        "el idioma del proveedor.",
+        help="If empty, Odoo will use the decimal separator configured on "
+        "the language of the partner.",
     )
     simple_pdf_thousand_separator = fields.Selection(
         [
-            ("none", "ninguno"),
-            ("space", "espacio"),
-            ("dot", "punto"),
-            ("comma", "coma"),
-            ("apostrophe", "apóstrofe"),
+            ("none", "none"),
+            ("space", "space"),
+            ("dot", "dot"),
+            ("comma", "comma"),
+            ("apostrophe", "apostrophe"),
         ],
-        string="Separador de Miles",
+        string="Thousand Separator",
         compute="_compute_simple_pdf_thousand_separator",
         readonly=False,
         precompute=True,
         store=True,
-        help="Si está vacío, Odoo usará el separador de miles configurado en "
-        "el idioma del proveedor.",
+        help="If empty, Odoo will use the thousand separator configured on "
+        "the language of the partner.",
     )
     simple_pdf_pages = fields.Selection(
         [
-            ("first", "Solo Primera Página"),
-            ("all", "Todas las Páginas"),
+            ("first", "First Page Only"),
+            ("all", "All Pages"),
         ],
         default="all",
-        string="Análisis de Página",
+        string="Page Analysis",
     )
     simple_pdf_currency_id = fields.Many2one(
         "res.currency",
-        string="Moneda de Importación de Factura",
+        string="Invoice Import Currency",
         ondelete="restrict",
-        help="Si está vacío, Odoo usará la moneda de la compañía.",
+        help="If empty, Odoo will use the company currency.",
     )
     simple_pdf_field_ids = fields.One2many(
         "account.invoice.import.simple.pdf.fields",
         "partner_id",
-        string="Campos para Importación de Factura PDF",
+        string="Fields for PDF Invoice Import",
     )
     simple_pdf_invoice_number_ids = fields.One2many(
         "account.invoice.import.simple.pdf.invoice.number",
         "partner_id",
-        string="Formato de Número de Importación de Factura",
+        string="Invoice Import Number Format",
     )
     simple_pdf_test_file = fields.Binary(
-        string="Archivo PDF de Factura de Prueba", attachment=True
+        string="Test PDF Invoice File", attachment=True
     )
-    simple_pdf_test_filename = fields.Char(string="Nombre de Archivo PDF de Prueba")
-    simple_pdf_test_raw_text = fields.Text(string="Extracción de Texto de Prueba", readonly=True)
-    simple_pdf_test_results = fields.Html(string="Resultados de la Prueba", readonly=True)
+    simple_pdf_test_filename = fields.Char(string="Test PDF Invoice Filename")
+    simple_pdf_test_raw_text = fields.Text(string="Test Text Extraction", readonly=True)
+    simple_pdf_test_results = fields.Html(string="Test Results", readonly=True)
 
     @api.constrains("simple_pdf_decimal_separator", "simple_pdf_thousand_separator")
     def _check_simple_pdf_separator(self):
@@ -146,8 +145,8 @@ class ResPartner(models.Model):
             ):
                 raise ValidationError(
                     _(
-                        "Para el proveedor '%s', el separador decimal no puede ser "
-                        "el mismo que el separador de miles."
+                        "For partner '%s', the decimal separator cannot be "
+                        "the same as the thousand separator."
                     )
                     % partner.display_name
                 )
@@ -189,7 +188,7 @@ class ResPartner(models.Model):
         self.ensure_one()
         if not self.simple_pdf_invoice_number_ids:
             raise UserError(
-                _("Falta la configuración del formato del número de factura en el proveedor '%s'.")
+                _("Missing invoice number format configuration on partner '%s'.")
                 % self.display_name
             )
         regex = []
@@ -232,33 +231,35 @@ class ResPartner(models.Model):
         rpo = self.env["res.partner"]
         vals = {}
         test_results = []
-        test_results.append("<small>%s</small><br/>" % _("Los errores están en rojo."))
-        test_results.append(
-            "<small>%s %s</small><br/>"
-            % (_("Fecha de Prueba:"), format_datetime(self.env, fields.Datetime.now()))
+        label = _("Errors are in red.")
+        test_results.append(f"<small>{label}</small><br/>")
+        label = " ".join(
+            [_("Test Date:"), format_datetime(self.env, fields.Datetime.now())]
         )
+        test_results.append(f"<small>{label}</small><br/>")
         if not self.simple_pdf_test_file:
-            raise UserError(_("Debes subir una factura PDF de prueba."))
+            raise UserError(_("You must upload a test PDF invoice."))
         test_info = {"test_mode": True}
         aiio._simple_pdf_update_test_info(test_info)
         file_data = base64.b64decode(self.simple_pdf_test_file)
         raw_text_dict = aiio.simple_pdf_text_extraction(file_data, test_info)
-        test_results.append(
-            "<small>%s %s</small><br/>"
-            % (
-                _("Parámetro del sistema de extracción de texto:"),
-                test_info.get("text_extraction_config") or _("ninguno"),
-            )
+        label = " ".join(
+            [
+                _("Text extraction system parameter:"),
+                test_info.get("text_extraction_config") or _("none"),
+            ]
         )
-        test_results.append(
-            "<small>%s %s</small><br/>"
-            % (_("Herramienta de extracción de texto utilizada:"), test_info.get("text_extraction"))
+        test_results.append(f"<small>{label}</small><br/>")
+        label = " ".join(
+            [_("Text extraction tool used:"), test_info.get("text_extraction")]
         )
+        test_results.append(f"<small>{label}</small><br/>")
         if self.simple_pdf_pages == "first":
             vals["simple_pdf_test_raw_text"] = raw_text_dict["first"]
         else:
             vals["simple_pdf_test_raw_text"] = raw_text_dict["all"]
-        test_results.append("<h3>%s</h3><ul>" % _("Buscando Proveedor"))
+        label = _("Searching Partner")
+        test_results.append(f"<h3>{label}</h3><ul>")
         partner_id = aiio.simple_pdf_match_partner(
             raw_text_dict["all_no_space"], test_results
         )
@@ -267,65 +268,64 @@ class ResPartner(models.Model):
             partner = rpo.browse(partner_id)
             if partner_id == self.id:
                 partner_ok = True
-                partner_result = _("Proveedor actual encontrado")
+                partner_result = _("Current partner found")
             else:
-                partner_result = "%s %s" % (
-                    _("Se encontró otro proveedor:"),
-                    partner.display_name,
+                partner_result = " ".join(
+                    [
+                        _("Found another partner:"),
+                        partner.display_name,
+                    ]
                 )
         else:
-            partner_result = _("No se encontró ningún proveedor.")
+            partner_result = _("No partner found.")
+        label = _("Result:")
+        style = not partner_ok and ERROR_STYLE or ""
         test_results.append(
-            "<li><b>%s</b> <b%s>%s</b></li></ul>"
-            % (_("Resultado:"), not partner_ok and ERROR_STYLE or "", partner_result)
+            f"<li><strong>{label}</strong> "
+            f"<strong{style}>{partner_result}</strong></li></ul>"
         )
         if partner_ok:
             partner_config = self._simple_pdf_partner_config()
-            test_results.append("<h3>%s</h3><ul>" % _("Configuración de Importe"))
-            test_results.append(
-                """<li>%s "%s" (%s)</li>"""
-                % (
-                    _("Separador Decimal:"),
-                    partner_config["decimal_sep"],
-                    partner_config["char2separator"].get(
-                        partner_config["decimal_sep"], _("desconocido")
-                    ),
-                )
+            label = _("Amount Setup")
+            test_results.append(f"<h3>{label}</h3><ul>")
+            label = _("Decimal Separator:")
+            helper = partner_config["char2separator"].get(
+                partner_config["decimal_sep"], _("unknown")
             )
             test_results.append(
-                """<li>%s "%s" (%s)</li></ul>"""
-                % (
-                    _("Separador de Miles:"),
-                    partner_config["thousand_sep"],
-                    partner_config["char2separator"].get(
-                        partner_config["thousand_sep"], _("desconocido")
-                    ),
-                )
+                f"""<li>{label} "{partner_config['decimal_sep']}" ({helper})</li>"""
+            )
+            label = _("Thousand Separator:")
+            helper = partner_config["char2separator"].get(
+                partner_config["thousand_sep"], _("unknown")
+            )
+            test_results.append(
+                f"""<li>{label} "{partner_config['thousand_sep']}" """
+                f"({helper})</li></ul>"
             )
             parsed_inv = aiio.simple_pdf_parse_invoice(file_data, test_info)
             key2label = {
-                "pattern": _("Expresión Regular"),
-                "date_format": _("Formato de Fecha"),
-                "res_regex": _("Lista Bruta"),
-                "valid_list": _("Lista Filtrada de Datos Válidos"),
-                "sorted_list": _("Lista Ordenada"),
-                "error_msg": _("Mensaje de error"),
-                "start": _("Cadena de Inicio"),
-                "end": _("Cadena de Fin"),
+                "pattern": _("Regular Expression"),
+                "date_format": _("Date Format"),
+                "res_regex": _("Raw List"),
+                "valid_list": _("Valid-data Filtered List"),
+                "sorted_list": _("Ordered List"),
+                "error_msg": _("Error message"),
+                "start": _("Start String"),
+                "end": _("End String"),
             }
             for field in self.simple_pdf_field_ids:
                 test_results.append(
-                    "<h3>%s</h3><ul>" % test_info["field_name_sel"][field.name]
+                    f"<h3>{test_info['field_name_sel'][field.name]}</h3><ul>"
                 )
                 extract_method = test_info["extract_rule_sel"][field.extract_rule]
                 if field.extract_rule.startswith("position_"):
-                    extract_method += _(", Posición: %d") % field.position
-                test_results.append(
-                    "<li>%s %s</li>" % (_("Regla de Extracción:"), extract_method)
-                )
+                    extract_method += _(", Position: %d") % field.position
+                label = _("Extract Rule:")
+                test_results.append(f"<li>{label} {extract_method}</li>")
                 for key, value in test_info[field.name].items():
                     if key != "pattern" or self.env.user.has_group("base.group_system"):
-                        test_results.append("<li>%s: %s</li>" % (key2label[key], value))
+                        test_results.append(f"<li>{key2label[key]}: {value}</li>")
 
                 result = parsed_inv.get(field.name)
                 if "date" in field.name and result:
@@ -334,13 +334,12 @@ class ResPartner(models.Model):
                     result = format_amount(
                         self.env, result, parsed_inv["currency"]["recordset"]
                     )
+                label = _("Result:")
+                style = not result and ERROR_STYLE or ""
+                result_label = result or _("None")
                 test_results.append(
-                    "<li><b>%s</b> <b%s>%s</b></li></ul>"
-                    % (
-                        _("Resultado:"),
-                        not result and ERROR_STYLE or "",
-                        result or _("Ninguno"),
-                    )
+                    f"<li><strong>{label}</strong> "
+                    f"<strong{style}>{result_label}</strong></li></ul>"
                 )
         vals["simple_pdf_test_results"] = "\n".join(test_results)
         self.write(vals)
@@ -384,9 +383,9 @@ class ResPartner(models.Model):
         else:
             raise UserError(
                 _(
-                    "No se pudo obtener el separador decimal para el proveedor '%s': "
-                    "los campos 'Idioma' y 'Separador Decimal' están "
-                    "ambos vacíos para este proveedor."
+                    "Could not get the decimal separator for partner '%s': "
+                    "the fields 'Language' and 'Decimal Separator' are "
+                    "both empty for this partner."
                 )
                 % self.display_name
             )
@@ -394,8 +393,8 @@ class ResPartner(models.Model):
             thousand_sep = separator2char[self.simple_pdf_thousand_separator]
         elif lang:
             thousand_sep = lang.thousands_sep
-            # Remplace all white space characters (no-break-space, narrow no-break-space)
-            # by regular space
+            # Remplace all white space characters
+            # (no-break-space, narrow no-break-space) by regular space
             if regex.match(r"^\s$", thousand_sep):
                 thousand_sep = chr(32)  # regular space
         else:
@@ -403,11 +402,11 @@ class ResPartner(models.Model):
         if thousand_sep == decimal_sep:
             raise UserError(
                 _(
-                    "Para el proveedor '%(partner_name)s', el separador decimal "
-                    "(%(decimal_sep)s) es el mismo que "
-                    "el separador de miles (%(thousand_sep)s). Ten en cuenta que, "
-                    "si no se establece explícitamente, el separador decimal y de miles se leen "
-                    "del idioma del proveedor.",
+                    "For partner '%(partner_name)s', the decimal separator "
+                    "(%(decimal_sep)s) is the same as "
+                    "the thousand separator (%(thousand_sep)s). Keep in mind that, "
+                    "if not set explicitly, decimal and thousand separator are read "
+                    "from the language of the partner.",
                     partner_name=self.display_name,
                     decimal_sep=char2separator.get(decimal_sep),
                     thousand_sep=char2separator.get(thousand_sep),
@@ -437,21 +436,21 @@ class ResPartner(models.Model):
         if "date" not in field_list:
             raise UserError(
                 _(
-                    "Debes configurar una regla de extracción de campo para "
-                    "el campo 'Fecha' para el proveedor '%s'."
+                    "You must configure a field extraction rule for "
+                    "field 'Date' for partner '%s'."
                 )
                 % self.display_name
             )
         if amount_fields_count == 0:
             raise UserError(
-                _("No hay ningún campo de importe configurado para el proveedor '%s'.")
+                _("There is no amount field configured for partner '%s'.")
                 % self.display_name
             )
         if amount_fields_count == 1 and amount_total_count == 0:
             raise UserError(
                 _(
-                    "Para el proveedor '%s', solo se ha configurado un campo de importe "
-                    "pero no es 'Importe Total'."
+                    "For partner '%s', only one amount field is configured "
+                    "but it is not 'Amount Total'."
                 )
                 % self.display_name
             )

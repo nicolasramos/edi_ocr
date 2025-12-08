@@ -13,7 +13,7 @@ from odoo.osv import expression
 
 logger = logging.getLogger(__name__)
 try:
-    import fitz
+    import pymupdf
 except ImportError:
     logger.debug("Cannot import PyMuPDF")
 try:
@@ -34,11 +34,11 @@ class AccountInvoiceImport(models.TransientModel):
     _inherit = "account.invoice.import"
 
     @api.model
-    def fallback_parse_pdf_invoice(self, file_data):
+    def fallback_parse_pdf_invoice(self, file_data, company):
         """This method must be inherited by additional modules with
         the same kind of logic as the account_bank_statement_import_*
         modules"""
-        res = super().fallback_parse_pdf_invoice(file_data)
+        res = super().fallback_parse_pdf_invoice(file_data, company)
         if not res:
             res = self.simple_pdf_parse_invoice(file_data)
         return res
@@ -49,21 +49,19 @@ class AccountInvoiceImport(models.TransientModel):
         version = None
         try:
             pages = []
-            doc = fitz.open(fileobj.name)
+            doc = pymupdf.open(fileobj.name)
             for page in doc:
                 pages.append(page.get_text())
             res = {
                 "all": "\n\n".join(pages),
                 "first": pages and pages[0] or "",
             }
-            # For PyMuPDF, we used to get the version via __version__
-            # but it is not possible with newer version of the lib
-            if hasattr(fitz, "__version__"):
-                version = fitz.__version__
-            elif hasattr(fitz, "version") and isinstance(fitz.version, tuple):
-                version = fitz.version[0]
-            logger.info("Text extraction performed with PyMuPDF %s", version)
-            test_info["text_extraction"] = "pymupdf %s" % version
+            if hasattr(pymupdf, "__version__"):
+                version = pymupdf.__version__
+            elif hasattr(pymupdf, "version") and isinstance(pymupdf.version, tuple):
+                version = pymupdf.version[0]
+            logger.info(f"Text extraction made with PyMuPDF {version}")
+            test_info["text_extraction"] = f"pymupdf {version}"
         except Exception as e:
             logger.warning("Text extraction with PyMuPDF failed. Error: %s", e)
         return res
@@ -80,8 +78,8 @@ class AccountInvoiceImport(models.TransientModel):
                     "all": "\n\n".join(pages),
                     "first": pages and pages[0] or "",
                 }
-            test_info["text_extraction"] = "pypdf %s" % pypdf.__version__
-            logger.info("Text extraction performed with pypdf %s", pypdf.__version__)
+            test_info["text_extraction"] = f"pypdf {pypdf.__version__}"
+            logger.info("Text extraction made with pypdf %s", pypdf.__version__)
         except Exception as e:
             logger.warning("Text extraction with pypdf failed. Error: %s", e)
         return res
@@ -91,7 +89,8 @@ class AccountInvoiceImport(models.TransientModel):
         res = False
         if not shutil.which("pdftotext"):
             logger.warning(
-                "Couldn't find pdftotext utility. Hint: sudo apt install poppler-utils"
+                "Could not find the pdftotext utility. Hint: sudo apt install "
+                "poppler-utils"
             )
             return False
         cmd_args = ["pdftotext"]
@@ -120,7 +119,7 @@ class AccountInvoiceImport(models.TransientModel):
             ),
         }
         test_info["text_extraction"] = "pdftotext.cmd"
-        logger.info("Text extraction performed with pdftotext command")
+        logger.info("Text extraction made with pdftotext command")
         return res
 
     @api.model
@@ -134,10 +133,10 @@ class AccountInvoiceImport(models.TransientModel):
                     "all": "\n\n".join(pdf),
                     "first": pdf[0],
                 }
-            logger.info("Text extraction performed with pdftotext library")
+            logger.info("Text extraction made with pdftotext lib")
             test_info["text_extraction"] = "pdftotext.lib"
         except Exception as e:
-            logger.warning("Text extraction with pdftotext library failed. Error: %s", e)
+            logger.warning("Text extraction with pdftotext lib failed. Error: %s", e)
         return res
 
     @api.model
@@ -156,7 +155,7 @@ class AccountInvoiceImport(models.TransientModel):
         else:
             raise UserError(
                 _(
-                    "System parameter 'invoice_import_simple_pdf.pdf2txt' "
+                    "System Parameter 'invoice_import_simple_pdf.pdf2txt' "
                     "has an invalid value '%s'."
                 )
                 % specific_tool
@@ -165,8 +164,8 @@ class AccountInvoiceImport(models.TransientModel):
             raise UserError(
                 _(
                     "Odoo could not extract the text from the PDF invoice "
-                    "with the method %s. Refer to the Odoo server logs for more technical "
-                    "information about the cause of the failure."
+                    "with the method %s. Refer to the Odoo server logs for more "
+                    "technical information about the cause of the failure."
                 )
                 % specific_tool
             )
@@ -213,8 +212,8 @@ class AccountInvoiceImport(models.TransientModel):
                     raise UserError(
                         _(
                             "Odoo could not extract the text from the PDF invoice. "
-                            "Refer to the Odoo server logs for more technical information "
-                            "about the cause of the failure."
+                            "Refer to the Odoo server logs for more technical "
+                            "information about the cause of the failure."
                         )
                     )
         for key, text in res.items():
@@ -226,17 +225,17 @@ class AccountInvoiceImport(models.TransientModel):
                 res[key] = regex.sub(test_info["lonely_accents"], "", text)
 
         res["all_no_space"] = regex.sub(
-            "%s+" % test_info["space_pattern"], "", res["all"]
+            f"{test_info['space_pattern']}+", "", res["all"]
         )
         res["first_no_space"] = regex.sub(
-            "%s+" % test_info["space_pattern"], "", res["first"]
+            f"{test_info['space_pattern']}+", "", res["first"]
         )
         return res
 
     @api.model
     def _simple_pdf_keyword_fields(self):
         return {
-            "vat": _("VAT Number"),
+            "vat": _("VAT number"),
         }
 
     @api.model
@@ -269,11 +268,11 @@ class AccountInvoiceImport(models.TransientModel):
                 if all(found_res):
                     partner_id = partner["id"]
                     result_label = _(
-                        "Successful match on %(count)s keyword(s) (%(keywords)s)",
+                        "Successful match on %(count)s keywords (%(keywords)s)",
                         count=len(keywords),
                         keywords=", ".join(keywords),
                     )
-                    test_results.append("<li>%s</li>" % result_label)
+                    test_results.append(f"<li>{result_label}</li>")
                     break
             for kfield, kfield_label in keyword_fields_dict.items():
                 if partner[kfield] and partner[kfield] in raw_text_no_space:
@@ -282,7 +281,7 @@ class AccountInvoiceImport(models.TransientModel):
                         label=kfield_label,
                         value=partner[kfield],
                     )
-                    test_results.append("<li>%s</li>" % result_label)
+                    test_results.append(f"<li>{result_label}</li>")
                     break
         return partner_id
 
@@ -307,20 +306,21 @@ class AccountInvoiceImport(models.TransientModel):
             8239,
             8287,
         ]
-        return "[%s]" % "".join([chr(x) for x in space_ints])
+        space_ints_str = "".join([chr(x) for x in space_ints])
+        return f"[{space_ints_str}]"
 
     @api.model
     def _get_lonely_accents(self):
         lonely_accents = [
-            "\u00B4",  # acute accent
+            "\u00b4",  # acute accent
             "\u0060",  # grave accent
-            "\u005E",  # circumflex accent
-            "\u00A8",  # diaeresis
-            "\u02CA",  # modifier letter acute accent
-            "\u02CB",  # modifier letter grave accent
-            "\u02C6",  # modifier letter circumflex accent
+            "\u005e",  # circumflex accent
+            "\u00a8",  # diaeresis
+            "\u02ca",  # modifier letter acute accent
+            "\u02cb",  # modifier letter grave accent
+            "\u02c6",  # modifier letter circumflex accent
         ]
-        return "[%s]" % "".join(lonely_accents)
+        return f"[{''.join(lonely_accents)}]"
 
     @api.model
     def _simple_pdf_update_test_info(self, test_info):
@@ -351,11 +351,11 @@ class AccountInvoiceImport(models.TransientModel):
             test_info = {"test_mode": False}
         self._simple_pdf_update_test_info(test_info)
         rpo = self.env["res.partner"]
-        logger.info("Trying to parse PDF invoice with simple pdf module")
+        logger.info("Trying to analyze PDF invoice with simple pdf module")
         raw_text_dict = self.simple_pdf_text_extraction(file_data, test_info)
         partner_id = self.simple_pdf_match_partner(raw_text_dict["all_no_space"])
         if not partner_id:
-            parsed_inv = {"chatter_msg": ["Simple PDF import: could not find Vendor."]}
+            parsed_inv = {"chatter_msg": ["Simple PDF Import: count not find Vendor."]}
             return parsed_inv
         partner = rpo.browse(partner_id)
         raw_text = (
@@ -364,7 +364,7 @@ class AccountInvoiceImport(models.TransientModel):
             or raw_text_dict["all"]
         )
         logger.info(
-            "Simple pdf import found supplier %s ID %d", partner.display_name, partner_id
+            "Simple pdf import found partner %s ID %d", partner.display_name, partner_id
         )
         partner_config = partner._simple_pdf_partner_config()
         parsed_inv = {
@@ -376,26 +376,29 @@ class AccountInvoiceImport(models.TransientModel):
 
         # Check field config
         for field in partner.simple_pdf_field_ids:
-            logger.debug("Trabajando en el campo %s", field.name)
+            logger.debug("Working on field %s", field.name)
             try:
-                getattr(field, "_get_%s" % field.name)(
+                getattr(field, f"_get_{field.name}")(
                     parsed_inv, raw_text, partner_config, test_info
                 )
             except AttributeError:
                 raise UserError(
-                    _("Missing parsing method for field '%s'. This should never happen.")
+                    _("Missing parse method for field '%s'. This should never happen.")
                     % field.name
                 ) from None
 
         failed_fields = parsed_inv.pop("failed_fields")
         if failed_fields:
+            fields_label = ", ".join(
+                [
+                    f"<strong>{test_info['field_name_sel'][failed_field]}</strong>"
+                    for failed_field in failed_fields
+                ]
+            )
             parsed_inv["chatter_msg"].append(
-                _("<b>Failed</b> to extract the following field(s): %s.")
-                % ", ".join(
-                    [
-                        "<b>%s</b>" % test_info["field_name_sel"][failed_field]
-                        for failed_field in failed_fields
-                    ]
+                _(
+                    f"<strong>Failed</strong> to extract the following "
+                    f"field(s): {fields_label}."
                 )
             )
 

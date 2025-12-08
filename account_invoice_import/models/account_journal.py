@@ -1,29 +1,25 @@
-# Copyright 2023 Akretion France (http://www.akretion.com/)
+# Copyright 2025 Akretion France (https://www.akretion.com/)
 # @author: Alexis de Lattre <alexis.delattre@akretion.com>
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 
-from odoo import models
+from odoo import Command, models
 
 
 class AccountJournal(models.Model):
     _inherit = "account.journal"
 
-    def create_invoice_from_attachment(self, attachment_ids=None):
-        if self._context.get("force_native_invoice_import") or not attachment_ids:
-            return super().create_invoice_from_attachment(attachment_ids=attachment_ids)
-        attachment = self.env["ir.attachment"].browse(attachment_ids[0])
+    def create_document_from_attachment(self, attachment_ids):
+        """Inherit native method used when clicking on the 'Upload' button from the
+        Vendor Bill tree view"""
+        if self:
+            company_id = self.company_id.id
+        else:
+            company_id = self.env.company.id
         wiz = self.env["account.invoice.import"].create(
             {
-                "invoice_file": attachment.datas,
-                "invoice_filename": attachment.name,
+                "company_id": company_id,
+                "invoice_attachment_ids": [Command.set(attachment_ids)],
             }
         )
-        action = wiz.import_invoice()
-        # JS crash when there is not a 'views' key != False
-        if (
-            not action.get("views")
-            and action.get("view_mode")
-            and action["view_mode"].startswith("form")
-        ):
-            action["views"] = [(False, "form")]
+        action = wiz.import_invoices()
         return action
