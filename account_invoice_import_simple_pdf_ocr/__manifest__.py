@@ -16,6 +16,7 @@
     "version": "17.0.1.0.0",
     "depends": [
         "account_invoice_import_simple_pdf",
+        "account",
     ],
     "external_dependencies": {
         "python": [
@@ -26,7 +27,11 @@
         "deb": ["tesseract-ocr-spa", "poppler-utils"],
     },
     "data": [
+        "security/ir.model.access.csv",
         "data/ir_config_parameter_data.xml",
+        "views/res_config_settings_views.xml",
+        "views/res_partner.xml",
+        "wizards/ai_extraction_wizard_views.xml",
     ],
     "assets": {
         "web.assets_backend": [

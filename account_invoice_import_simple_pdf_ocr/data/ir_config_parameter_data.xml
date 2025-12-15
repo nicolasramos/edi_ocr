@@ -1,8 +1,66 @@
 <odoo>
-    <data noupdate="1"> <!-- noupdate="1" para no sobrescribir en actualizaciones si el usuario lo cambió -->
+    <data> <!-- noupdate removed to force update of parameters -->
         <record id="param_tessdata_prefix" model="ir.config_parameter">
             <field name="key">account_invoice_import_simple_pdf_ocr.tessdata_prefix</field>
-            <field name="value">/usr/share/tesseract-ocr/5/tessdata</field> <!-- Valor por defecto -->
+            <field name="value">/usr/share/tesseract-ocr/5/tessdata</field>
+        </record>
+        <record id="param_ollama_endpoint" model="ir.config_parameter">
+            <field name="key">account_invoice_import_simple_pdf_ocr.ollama_endpoint</field>
+            <field name="value">http://ollama:11434/api/generate</field>
+        </record>
+        <record id="param_ollama_model" model="ir.config_parameter">
+            <field name="key">account_invoice_import_simple_pdf_ocr.ollama_model</field>
+            <field name="value">gemma:2b</field>
+        </record>
+        <record id="param_ollama_prompt" model="ir.config_parameter">
+            <field name="key">account_invoice_import_simple_pdf_ocr.ollama_prompt</field>
+            <field name="value">You are a regex expert.
+Analyze the following invoice text (which may be in Spanish, Catalan, or English).
+Extract configuration for the following fields:
+
+1. 'amount_total': Total amount to pay (Look for: Total, Import, Suma).
+2. 'date': Invoice Date (Look for: Data, Fecha, Date).
+3. 'invoice_number': Invoice Number (Look for: Factura, Num, Invoice, N factura).
+4. 'amount_untaxed': Base amount before tax (Look for: Base, Imponible, Subtotal).
+5. 'amount_tax': Tax amount (Look for: IVA, Tax, Impuestos).
+
+Also detect the numeric and date formats used in the text.
+
+Return ONLY a JSON object with this EXACT structure:
+{
+    "amount_total": {"value": "123.45", "regex": "Total\\s+([\\d,.]+)$"},
+    "date": {"value": "12/01/2024", "regex": "Data\\s+(\\d{2}/\\d{2}/\\d{4})"},
+    "invoice_number": {"value": "INV-001", "regex": "Factura\\s+([A-Z0-9/-]+)"},
+    "amount_untaxed": null,
+    "amount_tax": null,
+    "date_format": "dd-mm-y4",
+    "date_separator": "slash",
+    "decimal_separator": "dot",
+    "thousand_separator": "comma",
+    "keyword": "MySupplier"
+}
+
+Format Options:
+- date_format: dd-mm-y4, dd-month-y4, month-dd-y4, mm-dd-y4, y4-mm-dd
+- date_separator: slash, dash, dot, space
+- decimal_separator: dot, comma
+- thousand_separator: none, space, dot, comma, apostrophe
+
+IMPORTANT:
+- The regex must match the RAW text provided below.
+- Do NOT use comments in the regex (no //).
+- Escape backslashes correctly in the JSON string (e.g. \\d for digit).
+
+Text:
+{text}</field>
+        </record>
+        <record id="param_ocr_engine" model="ir.config_parameter">
+            <field name="key">account_invoice_import_simple_pdf_ocr.ocr_engine</field>
+            <field name="value">paddle</field>
+        </record>
+        <record id="param_paddle_lang" model="ir.config_parameter">
+            <field name="key">account_invoice_import_simple_pdf_ocr.paddle_lang</field>
+            <field name="value">en</field>
         </record>
     </data>
 </odoo>

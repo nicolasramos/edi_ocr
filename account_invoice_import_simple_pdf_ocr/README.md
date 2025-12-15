@@ -1,180 +1,148 @@
 # Account Invoice Import Simple PDF OCR
 
-Este módulo extiende la funcionalidad del módulo `account_invoice_import_simple_pdf` añadiendo capacidades de OCR (Reconocimiento Óptico de Caracteres) utilizando Tesseract.
+Este módulo potencia la importación de facturas PDF en Odoo combinando **OCR avanzado (Tesseract/PaddleOCR)** con **Inteligencia Artificial (Ollama)** para la detección automática de reglas de extracción, además de soportar la asignación de **Cuentas Analíticas**.
 
-## Características
+## Características Principales
 
-- Extrae texto de facturas PDF que contienen imágenes escaneadas
-- Integración con Tesseract OCR para reconocimiento de texto
-- Compatible con el flujo de trabajo estándar de importación de facturas
-- Soporte para PDF con múltiples páginas
-- Funciona con facturas en español (configurable para otros idiomas)
+### 1. Extracción de Texto OCR Avanzada
+- **Soporte Multi-Motor**: Elige entre **Tesseract** (clásico) o **PaddleOCR** (recomendado para CPU/precisión).
+- **Procesamiento de Imágenes**: Extrae texto de facturas escaneadas (imágenes dentro del PDF).
+- **Optimización CPU**: PaddleOCR ofrece un excelente rendimiento en servidores sin GPU.
+
+### 2. Detección de Reglas con IA (Ollama)
+- **Asistente Inteligente**: Un wizard que analiza el texto de la factura y sugiere automáticamente las expresiones regulares (Regex) para:
+    - Número de Factura
+    - Fecha de Factura
+    - Importe Total
+- **Modelos Ligeros**: Optimizado para funcionar con modelos locales pequeños como **Gemma:2b**, **Phi3** o **Llama3.2**.
+
+### 3. Soporte de Contabilidad Analítica
+- **Extracción de Analítica**: Capacidad para extraer códigos o nombres de cuentas analíticas del PDF y asignarlos automáticamente a las líneas de la factura (100% distribución).
 
 ## Requisitos
 
-### Dependencias de sistema
-
-- tesseract-ocr (versión 4.0+)
-- tesseract-ocr-spa (paquete de idioma español para Tesseract)
-- poppler-utils (para la conversión de PDF a imágenes)
+### Dependencias de Sistema
+- **Poppler Utils**: Necesario para convertir PDF a imágenes (`pdf2image`).
+- **Tesseract OCR** (Opcional): Si decides usar el motor Tesseract.
+- **Servidor Ollama** (Opcional): Necesario solo si quieres usar la detección automática de reglas con IA.
 
 ### Dependencias Python
+- `pdf2image`
+- `regex`
+- `requests` (para conexión con Ollama)
+- `paddlepaddle` y `paddleocr` (Recomendado: para usar el motor PaddleOCR)
+- `pytesseract` (Opcional: para motor Tesseract)
 
-- pytesseract
-- pdf2image
-- regex
-- dateparser
-- pypdf2
 ## Instalación
 
-### 1. Instalación del módulo
-
-Puedes instalar este módulo de la misma forma que cualquier otro módulo de Odoo:
-
-1. Clona este repositorio en tu directorio de addons de Odoo
-2. Actualiza la lista de aplicaciones en Odoo
-3. Busca e instala "Account Invoice Import Simple PDF OCR"
-
-### 2. Instalación de dependencias
-
-Para instalar las dependencias necesarias, ejecuta el script de instalación incluido:
-
+### 1. Instalar Librerías Python
 ```bash
-sudo bash /path/to/odoo/addons/account_invoice_import_simple_pdf_ocr/tools/install_dependencies.sh
+# Para PaddleOCR (Recomendado)
+pip3 install paddlepaddle paddleocr pdf2image regex requests
+
+# Para Tesseract (Alternativa)
+pip3 install pytesseract pdf2image regex requests
 ```
 
-Alternativamente, puedes instalar las dependencias manualmente:
-
+### 2. Instalar Dependencias del Sistema (Debian/Ubuntu)
 ```bash
-# Dependencias del sistema
 sudo apt-get update
-sudo apt-get install -y tesseract-ocr poppler-utils tesseract-ocr-spa
+sudo apt-get install -y poppler-utils libgl1-mesa-glx
 
-# Dependencias de Python
-pip3 install pdf2image pytesseract regex
+# Si vas a usar Tesseract:
+sudo apt-get install -y tesseract-ocr tesseract-ocr-spa
 ```
 
-### 3. Configuración de Tesseract
+### 3. Instalación de Ollama (Solo para detección con IA)
 
-El módulo utiliza por defecto la ruta `/usr/share/tesseract-ocr/5/tessdata` como directorio de datos para Tesseract. Si tu instalación utiliza una ruta diferente, deberás modificar la variable `TESSDATA_PREFIX` en el archivo `models/account_invoice_import.py`.
+Si deseas usar la detección automática de reglas, necesitas un servidor Ollama corriendo.
 
-Dependiendo de la versión de Tesseract y la distribución, las rutas pueden variar:
-- Tesseract 4.x: `/usr/share/tesseract-ocr/5/tessdata`
-- Tesseract 5.x: `/usr/share/tesseract-ocr/5/tessdata`
-
-#### Configuración en entornos Docker
-
-Si estás usando Odoo en un contenedor Docker, debes instalar Tesseract dentro del contenedor. Puedes hacerlo de varias formas:
-
-1. **Extendiendo la imagen base de Odoo:**
-   - Crea un Dockerfile personalizado que instale las dependencias necesarias
-   - Asegúrate de que la variable `TESSDATA_PREFIX` apunte al directorio correcto
-
-2. **En contenedores Doodba:**
-   - Modifica el archivo `Dockerfile` de tu proyecto Doodba para incluir las dependencias
-   - Usa un script personalizado en `entrypoint.d` para configurar el entorno
-
-Ejemplo para un Dockerfile personalizado:
-```Dockerfile
-FROM odoo:16
-
-USER root
-
-# Instalar dependencias
-RUN apt-get update && apt-get install -y \
-    tesseract-ocr \
-    tesseract-ocr-spa \
-    poppler-utils \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
-
-# Instalar dependencias Python
-RUN pip3 install pdf2image pytesseract regex
-
-# Verificar la ubicación de tessdata y establecer la variable de entorno
-RUN find /usr -name "tessdata" -type d | head -n 1 > /tmp/tessdata_path.txt
-ENV TESSDATA_PREFIX=$(cat /tmp/tessdata_path.txt)
-
-USER odoo
+**Opción A: Instalación Local (Linux)**
+```bash
+curl -fsSL https://ollama.com/install.sh | sh
 ```
+
+**Opción B: Instalación con Docker (Genérico)**
+```bash
+docker run -d -v ollama:/root/.ollama -p 11434:11434 --name ollama ollama/ollama
+```
+
+**Opción C: Integración en Doodba (docker-compose)**
+
+Si usas Doodba, añade el servicio `ollama` a tu archivo `docker-compose.yaml` (o `devel.yaml` / `prod.yaml`):
+
+```yaml
+services:
+  ollama:
+    image: ollama/ollama
+    volumes:
+      - ollama_data:/root/.ollama
+    ports:
+      - "11434:11434"
+    restart: unless-stopped
+
+volumes:
+  ollama_data:
+```
+
+Luego, en la configuración de Odoo (Ajustes), la URL del Endpoint será: `http://ollama:11434/api/generate` (usando el nombre del servicio como host).
+
+### 3. Configure Odoo
+1.  Go to **Invoicing > Configuration > Settings**.
+2.  Scroll down to **AI Extraction Rules**.
+3.  Enter the **Ollama Endpoint** (default: `http://ollama:11434/api/generate`).
+4.  Enter the **Ollama Model**:
+    *   **Recommended (Balanced)**: `gemma:2b` (Default). Good accuracy, moderate speed.
+    *   **Fast (low CPU)**: `llama3.2:1b` or `qwen2.5:0.5b`. Very fast, but might be less accurate with complex regex requests.
+    *   **Accurate (slow)**: `llama3.1` or `mistral`. Best results, but slow on CPU.
+5.  Click **"Download / Pull Model"** to ensure the model is available in the Ollama container.
+6.  (Optional) Customize the **System Prompt** if you need specific extraction logic.
+
+### 4. Configure OCR Engine (Optional)
+Puedes descargar los modelos de dos formas:
+1.  **Desde Odoo (Nuevo):** Ve a *Ajustes > Facturación > AI Extraction Rules*, introduce el nombre del modelo (ej. `gemma:2b`) y pulsa el botón **"Download / Pull Model"**.
+2.  **Desde Consola:** Ejecuta: `docker exec -it <container_id> ollama pull gemma:2b`
+```bash
+ollama pull gemma:2b
+# o
+ollama pull phi3
+```
+
+## Configuración
+
+Ve a **Ajustes > Facturación > AI Extraction Rules**.
+
+### Configuración de Motor OCR
+*   **OCR Engine**: Selecciona `PaddleOCR` (recomendado) o `Tesseract`.
+*   **PaddleOCR Language**: Código de idioma si usas Paddle (ej. `en`, `es`).
+
+### Configuración de IA (Ollama)
+Para usar el asistente de detección de reglas:
+*   **Ollama Endpoint**: URL de tu servidor Ollama (ej. `http://localhost:11434/api/generate`).
+*   **Ollama Model**: Modelo a utilizar. Para entornos CPU, recomendamos **`gemma:2b`** o **`phi3`**.
 
 ## Uso
 
-### Importación de facturas
+### Flujo de Importación (Día a día)
+1.  Sube tu factura PDF en **Proveedores > Facturas > Importar**.
+2.  El sistema usará el motor OCR configurado (Paddle/Tesseract) para leer el texto.
+3.  Aplicará las reglas Regex configuradas en el contacto para extraer los datos.
 
-1. Navega a Contabilidad > Proveedores > Facturas
-2. Haz clic en "Crear" y luego en "Importar factura"
-3. Selecciona un archivo PDF que contenga una factura escaneada
-4. El sistema intentará extraer la información utilizando OCR
-5. Revisa y confirma los datos extraídos
+### Asistente de Detección de Reglas (Configuración inicial por proveedor)
+Si tienes un nuevo proveedor y no quieres crear los Regex manualmente:
+1.  Ve a la ficha del **Contacto (Partner)**.
+2.  Pestaña **Vendor Bills Import**.
+3.  Sube un PDF de ejemplo en "Test File".
+4.  Haz clic en el botón **"Detect Rules with AI"**.
+5.  Confirma la acción. La IA analizará el texto y rellenará los campos de configuración automáticamente.
 
-### Configuración adicional
+## Preguntas Frecuentes (FAQ)
 
-Para especificar que se use siempre Tesseract como herramienta de extracción de texto:
+### ¿Es necesario Ollama para usar PaddleOCR?
+**NO.** Son independientes.
+*   **PaddleOCR** es el "ojo": se usa para leer el texto del PDF durante la importación diaria.
+*   **Ollama** es el "cerebro": se usa solo puntualmente para ayudarte a configurar las reglas Regex la primera vez.
+Puedes usar PaddleOCR para mejorar la lectura de tus facturas sin tener ningún servidor de IA configurado.
 
-1. Accede a Ajustes > Parámetros del sistema
-2. Crea un nuevo parámetro con:
-   - Clave: `invoice_import_simple_pdf.pdf2txt`
-   - Valor: `tesseract`
-
-**¿Por qué configurar este parámetro?**
-
-- El módulo base (`account_invoice_import_simple_pdf`) utiliza esta clave para determinar qué herramienta usar para extraer texto de los PDF.
-- Las herramientas estándar (`pymupdf`, `pdftotext`, etc.) no pueden leer texto de imágenes.
-- Al establecer el valor a `tesseract`, le indicas a Odoo que priorice el uso de Tesseract OCR. Esto es crucial para procesar facturas escaneadas o basadas en imágenes.
-- Si no configuras este parámetro, Tesseract solo se usará como último recurso si las otras herramientas fallan. Establecerlo explícitamente asegura que el OCR se intente primero para archivos basados en imágenes.
-
-## Resolución de problemas
-
-### El OCR no reconoce correctamente el texto
-
-- Asegúrate de que el paquete de idioma correcto está instalado para Tesseract
-- Verifica que la calidad de la imagen/escáner sea suficiente
-- Ajusta la variable `TESSDATA_PREFIX` si es necesario
-
-### El módulo no extrae texto de las imágenes en los PDF
-
-- Verifica que Tesseract esté correctamente instalado: `tesseract --version`
-- Comprueba que el parámetro del sistema está configurado: `invoice_import_simple_pdf.pdf2txt` debe tener el valor `tesseract`
-- Verifica la ruta de tessdata con: `find /usr -name "tessdata" -type d`
-- Comprueba que el usuario que ejecuta Odoo tiene permisos para acceder a tessdata
-- Si estás utilizando un contenedor, asegúrate de que todas las dependencias están instaladas dentro del contenedor
-- Comprueba los logs del servidor para ver si hay errores específicos de Tesseract
-
-### Error de importación de módulos Python
-
-Si encuentras errores relacionados con la importación de módulos Python:
-
-```python
-ImportError: No module named pytesseract
-```
-
-Asegúrate de que las dependencias de Python estén instaladas correctamente:
-
-```bash
-pip3 install pdf2image pytesseract regex
-```
-
-## Pruebas
-
-Este módulo incluye pruebas automatizadas que verifican:
-
-1. Extracción de texto mediante OCR de facturas escaneadas
-2. Funcionamiento del método fallback para interpretar facturas
-3. Selección específica de herramientas de extracción
-
-Para ejecutar las pruebas:
-
-```bash
-odoo -d your_database -i account_invoice_import_simple_pdf_ocr --test-enable
-```
-
-## Soporte
-
-Para obtener ayuda sobre este módulo, contactar a:
-
-   - Nicolás Ramos <hola@nicolasramos.es>
-
-## Licencia
-
-LGPL-3
+### ¿Por qué PaddleOCR en lugar de Tesseract?
+PaddleOCR suele ofrecer mucha mejor precisión en facturas con diseños complejos o escaneos de baja calidad, y es sorprendentemente rápido en CPU estándar, lo que lo hace ideal para servidores VPS sin gráfica dedicada.

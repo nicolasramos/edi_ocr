@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_ai_extraction_wizard_form" model="ir.ui.view">
+        <field name="name">ai.extraction.wizard.form</field>
+        <field name="model">ai.extraction.wizard</field>
+        <field name="arch" type="xml">
+            <form string="AI Extraction Rules Detection">
+                <group>
+                    <field name="partner_id" invisible="1"/>
+                    <field name="file_content" filename="filename"/>
+                    <field name="filename" invisible="1"/>
+                </group>
+                <footer>
+                    <button string="Detect Rules" name="action_detect_rules" type="object" class="btn-primary"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_ai_extraction_wizard" model="ir.actions.act_window">
+        <field name="name">Detect Rules with AI</field>
+        <field name="res_model">ai.extraction.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+</odoo>
