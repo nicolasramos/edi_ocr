@@ -21,7 +21,7 @@ class ResPartner(models.Model):
         company_dependent=True,
         string="Default Expense Account",
         domain="[('deprecated', '=', False), "
-        "('company_ids', 'in', current_company_id)]",
+        "('company_id', '=', current_company_id)]",
         help="The account configured here will be updated by the mapping of the "
         "fiscal position.",
     )
@@ -86,7 +86,7 @@ class ResPartner(models.Model):
                 vals["taxes"] = taxes
             if (
                 self.invoice_import_account_id
-                and company in self.invoice_import_account_id.company_ids
+                and company == self.invoice_import_account_id.company_id
             ):
                 vals["account"] = self.invoice_import_account_id
         return vals

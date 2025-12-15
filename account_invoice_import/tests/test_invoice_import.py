@@ -23,7 +23,7 @@ class TestInvoiceImport(TransactionCase):
                 "code": "612AII",
                 "name": "expense account invoice import",
                 "account_type": "expense",
-                "company_ids": [Command.set([cls.company.id])],
+                "company_id": cls.company.id,
             }
         )
         cls.income_account = cls.env["account.account"].create(
@@ -31,7 +31,7 @@ class TestInvoiceImport(TransactionCase):
                 "code": "707AII",
                 "name": "revenue account invoice import",
                 "account_type": "income",
-                "company_ids": [Command.set([cls.company.id])],
+                "company_id": cls.company.id,
             }
         )
         cls.adj_debit_account = cls.env["account.account"].create(
@@ -39,7 +39,7 @@ class TestInvoiceImport(TransactionCase):
                 "code": "658AII",
                 "name": "Adjustment debit account",
                 "account_type": "expense",
-                "company_ids": [Command.set([cls.company.id])],
+                "company_id": cls.company.id,
             }
         )
         cls.adj_credit_account = cls.env["account.account"].create(
@@ -47,7 +47,7 @@ class TestInvoiceImport(TransactionCase):
                 "code": "758AII",
                 "name": "Adjustment credit account",
                 "account_type": "income",
-                "company_ids": [Command.set([cls.company.id])],
+                "company_id": cls.company.id,
             }
         )
         cls.company.adjustment_debit_account_id = cls.adj_debit_account.id

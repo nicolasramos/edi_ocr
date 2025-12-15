@@ -563,7 +563,7 @@ class AccountInvoiceImport(models.TransientModel):
             )
         if (
             import_config["account"]
-            and import_config["company"] not in import_config["account"].company_ids
+            and import_config["company"] != import_config["account"].company_id
         ):
             import_config["account"] = False
         # set 'start_end_dates_installed' if the OCA module
