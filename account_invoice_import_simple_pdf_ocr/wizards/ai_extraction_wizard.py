@@ -84,6 +84,7 @@ class AIExtractionWizard(models.TransientModel):
         config = self.env["ir.config_parameter"].sudo()
         endpoint = config.get_param("account_invoice_import_simple_pdf_ocr.ollama_endpoint")
         model = config.get_param("account_invoice_import_simple_pdf_ocr.ollama_model")
+        token = config.get_param("account_invoice_import_simple_pdf_ocr.ollama_token")
         
         # Get configurable prompt or fallback to default
         default_prompt = """
@@ -119,12 +120,16 @@ The regex should be as specific as possible but robust.
              prompt = prompt_template + "\n\nText:\n" + full_text[:4000]
         
         try:
+             headers = {}
+             if token:
+                 headers["Authorization"] = f"Bearer {token}"
+            
              response = requests.post(endpoint, json={
                  "model": model,
                  "prompt": prompt,
                  "stream": False,
                  "format": "json"
-             }, timeout=120)
+             }, headers=headers, timeout=120)
              response.raise_for_status()
              result = response.json()
              response_text = result.get("response", "{}")

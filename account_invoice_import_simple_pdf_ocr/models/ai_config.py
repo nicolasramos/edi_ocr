@@ -28,6 +28,11 @@ class ResConfigSettings(models.TransientModel):
         default="You are a regex expert...",
         help="Prompt sent to the AI. Use {text} placeholder for the invoice content.",
     )
+    ollama_token = fields.Char(
+        string="Ollama Token",
+        config_parameter="account_invoice_import_simple_pdf_ocr.ollama_token",
+        help="Optional security token for external Ollama servers (sent as Bearer token)."
+    )
 
     @api.model
     def get_values(self):
@@ -63,6 +68,7 @@ class ResConfigSettings(models.TransientModel):
         self.ensure_one()
         endpoint = self.ollama_endpoint
         model = self.ollama_model
+        token = self.ollama_token
         
         if not endpoint or not model:
             raise UserError(_("Please configure Ollama Endpoint and Model first."))
@@ -78,9 +84,13 @@ class ResConfigSettings(models.TransientModel):
         def run_pull():
             try:
                 _logger.info("Starting background model pull for %s", model)
+                headers = {}
+                if token:
+                    headers["Authorization"] = f"Bearer {token}"
+                
                 # timeout=None means wait forever (or until TCP closes)
                 # Since Ollama might take minutes, this is safer in a thread.
-                response = requests.post(pull_url, json={"name": model, "stream": False}, timeout=None)
+                response = requests.post(pull_url, json={"name": model, "stream": False}, headers=headers, timeout=None)
                 response.raise_for_status()
                 _logger.info("Model pull finished successfully for %s", model)
             except Exception as e:
