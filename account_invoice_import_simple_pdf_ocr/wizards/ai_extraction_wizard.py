@@ -85,6 +85,7 @@ class AIExtractionWizard(models.TransientModel):
         endpoint = config.get_param("account_invoice_import_simple_pdf_ocr.ollama_endpoint")
         model = config.get_param("account_invoice_import_simple_pdf_ocr.ollama_model")
         token = config.get_param("account_invoice_import_simple_pdf_ocr.ollama_token")
+        timeout = int(config.get_param("account_invoice_import_simple_pdf_ocr.ollama_timeout", 120))
         
         # Get configurable prompt or fallback to default
         default_prompt = """
@@ -129,7 +130,7 @@ The regex should be as specific as possible but robust.
                  "prompt": prompt,
                  "stream": False,
                  "format": "json"
-             }, headers=headers, timeout=120)
+             }, headers=headers, timeout=timeout)
              response.raise_for_status()
              result = response.json()
              response_text = result.get("response", "{}")

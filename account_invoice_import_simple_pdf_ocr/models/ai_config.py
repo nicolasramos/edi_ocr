@@ -33,6 +33,12 @@ class ResConfigSettings(models.TransientModel):
         config_parameter="account_invoice_import_simple_pdf_ocr.ollama_token",
         help="Optional security token for external Ollama servers (sent as Bearer token)."
     )
+    ollama_timeout = fields.Integer(
+        string="Ollama Timeout (s)",
+        config_parameter="account_invoice_import_simple_pdf_ocr.ollama_timeout",
+        default=120,
+        help="Timeout in seconds for Ollama API requests. Increase if using slow CPU models."
+    )
 
     @api.model
     def get_values(self):

@@ -16,6 +16,10 @@
                             <field name="ollama_token"/>
                         </div>
                         <div class="row mt16">
+                            <label for="ollama_timeout" class="col-lg-3 o_light_label"/>
+                            <field name="ollama_timeout"/>
+                        </div>
+                        <div class="row mt16">
                             <label for="ollama_model" class="col-lg-3 o_light_label"/>
                             <field name="ollama_model" class="oe_inline"/>
                             <button name="action_download_ollama_model" type="object" string="Download / Pull Model" class="btn-secondary oe_inline btn-sm" style="margin-left: 10px;" display="inline" title="Triggers a download of the model to the Ollama server."/>
